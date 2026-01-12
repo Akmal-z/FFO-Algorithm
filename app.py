@@ -8,19 +8,17 @@ from config import DEPARTMENTS, DAYS_OF_WEEK, SHIFT_LENGTH
 
 st.set_page_config(page_title="FFO Staff Scheduling", layout="wide")
 
-st.title("🔥 Firefly Optimization – Staff Scheduling ")
+st.title("🔥 Firefly Optimization – Multi-Objective Staff Scheduling")
 
 # =========================
-# LOAD DATASET (SAFE)
+# LOAD ORIGINAL DATA
 # =========================
-demand_matrix, dataset_status = load_dataset()
-
-st.info(f"Dataset status: {dataset_status}")
-st.subheader("Demand Matrix (Department × Day of Month)")
+demand_matrix, status = load_dataset()
+st.info(f"Dataset status: {status}")
 st.dataframe(demand_matrix)
 
 # =========================
-# SIDEBAR – USER INPUT
+# SIDEBAR INPUTS
 # =========================
 st.sidebar.header("Scheduling Settings")
 
@@ -41,7 +39,7 @@ day_of_week = st.sidebar.selectbox(
 )
 
 st.sidebar.header("FFO Parameters")
-population_size = st.sidebar.slider("Number of Fireflies", 5, 30, 15)
+population_size = st.sidebar.slider("Population Size", 5, 30, 15)
 iterations = st.sidebar.slider("Iterations", 20, 200, 100)
 alpha = st.sidebar.slider("Randomization (α)", 0.0, 1.0, 0.3)
 beta = st.sidebar.slider("Attractiveness (β)", 0.1, 1.0, 0.6)
@@ -54,9 +52,9 @@ demand_vector = demand_matrix.loc[selected_departments, day_of_month].values
 # =========================
 # RUN FFO
 # =========================
-if selected_departments and st.button("Run Firefly Optimization"):
+if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
-    best_solution, cost_history = firefly_optimization(
+    best_solution, history, best_metrics = firefly_optimization(
         demand_vector=demand_vector,
         selected_departments=selected_departments,
         population_size=population_size,
@@ -65,30 +63,38 @@ if selected_departments and st.button("Run Firefly Optimization"):
         beta=beta
     )
 
-    st.success("Optimization completed")
+    st.success("Optimization completed (Best Balanced Solution Selected)")
 
-    st.subheader(
-        f"Optimized Schedule – Day {day_of_month} ({day_of_week})"
-    )
+    st.subheader("Penalty Breakdown (Best Balanced)")
+    st.write(f"Shortage Penalty: {best_metrics['shortage']}")
+    st.write(f"Workload Penalty: {best_metrics['workload']}")
+    st.write(f"Global Fitness: {best_metrics['global']}")
 
-    result = []
-    for dept in selected_departments:
-        start = best_solution[dept - 1]
+    # =========================
+    # SCHEDULING TABLE
+    # =========================
+    table = []
+    for d in selected_departments:
+        start = best_solution[d - 1]
         end = start + SHIFT_LENGTH
 
-        result.append({
-            "Department": dept,
+        table.append({
+            "Department": d,
             "Start Period": start + 1,
             "End Period": end,
-            "Working Hours": "8 hours"
+            "Shift Length": SHIFT_LENGTH
         })
 
-    st.dataframe(pd.DataFrame(result))
+    st.subheader("Final Schedule (Best Balanced Fitness)")
+    st.dataframe(pd.DataFrame(table))
 
-    st.subheader("FFO Convergence Graph")
+    # =========================
+    # CONVERGENCE GRAPH
+    # =========================
+    st.subheader("Global Fitness Convergence")
     st.line_chart(
         pd.DataFrame(
-            {"Cost": cost_history},
-            index=range(1, len(cost_history) + 1)
+            {"Global Fitness": history},
+            index=range(1, len(history) + 1)
         )
     )
