@@ -1,9 +1,9 @@
 # config.py
 
-# Time structure
-PERIODS_PER_DAY = 28          # 28 periods per day
-PERIOD_DURATION = 30          # minutes
-SHIFT_LENGTH = 16             # 16 periods = 8 hours
+# Time configuration
+PERIODS_PER_DAY = 28        # 28 periods per day
+PERIOD_DURATION = 30       # minutes
+SHIFT_LENGTH = 16          # 16 periods = 8 hours
 
 # Departments
 NUM_DEPARTMENTS = 6
