@@ -20,9 +20,6 @@ body {
     background-color: #0e1117;
     color: white;
 }
-.block-container {
-    padding-top: 2rem;
-}
 .metric-card {
     background-color: #161b22;
     padding: 20px;
@@ -41,7 +38,7 @@ body {
 """, unsafe_allow_html=True)
 
 # =========================
-# SIDEBAR (LEFT CONTROL PANEL)
+# LEFT SIDEBAR – FFO CONTROLS
 # =========================
 st.sidebar.title("⚙ Control Panel")
 
@@ -51,10 +48,27 @@ department = st.sidebar.selectbox(
     [1, 2, 3, 4, 5, 6]
 )
 
-st.sidebar.subheader("Advanced Parameters")
-w = st.sidebar.slider("Inertia Weight (w)", 0.1, 1.0, 0.7)
-c1 = st.sidebar.slider("Cognitive (c1)", 0.5, 2.5, 1.5)
-c2 = st.sidebar.slider("Social (c2)", 0.5, 2.5, 1.5)
+st.sidebar.subheader("2. FFO Parameters")
+
+alpha = st.sidebar.slider(
+    "Randomization (α)",
+    0.0, 1.0, 0.3
+)
+
+beta = st.sidebar.slider(
+    "Attractiveness (β)",
+    0.1, 1.0, 0.6
+)
+
+iterations = st.sidebar.slider(
+    "Iterations",
+    20, 200, 100
+)
+
+population_size = st.sidebar.slider(
+    "Number of Fireflies",
+    5, 30, 15
+)
 
 # =========================
 # MAIN TITLE
@@ -90,33 +104,51 @@ st.write("")
 start = st.button("🚀 START OPTIMIZATION")
 
 # =========================
-# OPTIMIZATION SIMULATION
+# FIRELY OPTIMIZATION (FFO)
 # =========================
 if start:
     progress_text = st.empty()
     progress_bar = st.progress(0)
 
+    # 🔥 Step 1: Initialize fireflies (random solutions)
+    fireflies = np.random.randint(
+        low=50_000,
+        high=90_000,
+        size=population_size
+    )
+
     cost_history = []
 
-    for i in range(100):
-        time.sleep(0.01)
-        progress_bar.progress(i + 1)
-        progress_text.text(f"Optimizing... Iteration {i+1}/100")
+    # 🔥 Step 2: Optimization loop
+    for t in range(iterations):
+        for i in range(population_size):
+            for j in range(population_size):
+                if fireflies[j] < fireflies[i]:
+                    # 🔥 Move firefly i towards brighter firefly j
+                    attraction = beta * (fireflies[j] - fireflies[i])
+                    random_move = alpha * np.random.randn() * 1000
+                    fireflies[i] += attraction + random_move
 
-        # Dummy convergence data (replace with FFO fitness later)
-        cost_history.append(
-            80000 - i * 500 + np.random.randint(-400, 400)
+        # Save best cost (brightness)
+        best_cost = np.min(fireflies)
+        cost_history.append(best_cost)
+
+        progress_bar.progress(int((t + 1) / iterations * 100))
+        progress_text.text(
+            f"Optimizing... Iteration {t+1}/{iterations}"
         )
 
-    st.success("Optimization completed in 0.22 seconds.")
+        time.sleep(0.01)
+
+    st.success("Optimization completed successfully.")
 
     # =========================
     # CONVERGENCE GRAPH
     # =========================
     st.markdown("### 1. Convergence Graph (Cost Reduction)")
 
-    chart_data = pd.DataFrame({
+    df_chart = pd.DataFrame({
         "Cost": cost_history
     })
 
-    st.line_chart(chart_data)
+    st.line_chart(df_chart)
