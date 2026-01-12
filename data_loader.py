@@ -6,26 +6,26 @@ import os
 def load_dataset(uploaded_file=None):
     """
     Priority:
-    1. Use uploaded file (Streamlit Cloud safe)
-    2. Use dataset from repo if exists
+    1. Uploaded file (Streamlit Cloud safe)
+    2. Dataset inside repository
     """
 
-    # Option 1: Uploaded file
+    # Option 1: User uploads file
     if uploaded_file is not None:
         df = pd.read_excel(uploaded_file)
         departments = [1, 2, 3, 4, 5, 6]
         return departments, df
 
-    # Option 2: Dataset inside repo
-    path = "dataset/Store_Size_6.xlsx"
+    # Option 2: Dataset in repo
+    repo_path = "dataset/Store_Size_6.xlsx"
 
-    if os.path.exists(path):
-        df = pd.read_excel(path)
+    if os.path.exists(repo_path):
+        df = pd.read_excel(repo_path)
         departments = [1, 2, 3, 4, 5, 6]
         return departments, df
 
-    # If BOTH fail → clear error
+    # Fail-safe (never silent crash)
     raise FileNotFoundError(
-        "Dataset not found. Please upload the Excel file "
-        "or ensure dataset/Store_Size_6.xlsx exists in the repository."
+        "Dataset not found. Upload the Excel file "
+        "or place it inside dataset/Store_Size_6.xlsx"
     )
