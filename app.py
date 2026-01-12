@@ -4,15 +4,8 @@ import streamlit as st
 import pandas as pd
 from data_loader import load_dataset
 from ffo import firefly_optimization
-from config import (
-    DEPARTMENTS,
-    DAYS_OF_WEEK,
-    SHIFT_LENGTH
-)
+from config import DEPARTMENTS, DAYS_OF_WEEK, SHIFT_LENGTH
 
-# =========================
-# PAGE CONFIG
-# =========================
 st.set_page_config(
     page_title="FFO Staff Scheduling Optimizer",
     layout="wide"
@@ -22,17 +15,14 @@ st.title("🔥 Firefly Optimization (FFO) – Staff Scheduling")
 st.write("Dataset-driven optimization using Firefly Algorithm")
 
 # =========================
-# LOAD DATASET (SAFE)
+# LOAD DATASET
 # =========================
 df, dataset_status = load_dataset()
-
 st.info(f"Dataset status: {dataset_status}")
-
-st.subheader("Dataset Preview")
 st.dataframe(df.head())
 
 # =========================
-# SIDEBAR – USER INPUT
+# SIDEBAR – DEPARTMENT SELECTOR (UNCHANGED)
 # =========================
 st.sidebar.header("Scheduling Settings")
 
@@ -52,6 +42,9 @@ day_of_week = st.sidebar.selectbox(
     DAYS_OF_WEEK
 )
 
+# =========================
+# SIDEBAR – FFO PARAMETERS
+# =========================
 st.sidebar.header("FFO Parameters")
 
 population_size = st.sidebar.slider(
@@ -95,11 +88,7 @@ if selected_departments and st.button("🚀 Run Firefly Optimization"):
         f"Optimized Schedule – Day {day_of_month} ({day_of_week})"
     )
 
-    # =========================
-    # RESULT TABLE
-    # =========================
     result = []
-
     for dept in selected_departments:
         start = best_solution[dept - 1]
         end = start + SHIFT_LENGTH
@@ -113,8 +102,5 @@ if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     st.dataframe(pd.DataFrame(result))
 
-    # =========================
-    # CONVERGENCE GRAPH
-    # =========================
     st.subheader("Convergence Graph (Cost Reduction)")
     st.line_chart(pd.DataFrame({"Cost": cost_history}))
