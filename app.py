@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 st.title("🔥 Firefly Optimization (FFO) – Staff Scheduling")
-st.write("Dataset-driven optimization using Firefly Algorithm")
+st.write("Dataset-driven scheduling using Firefly Algorithm")
 
 # =========================
 # LOAD DATASET
@@ -22,7 +22,7 @@ st.info(f"Dataset status: {dataset_status}")
 st.dataframe(df.head())
 
 # =========================
-# SIDEBAR – DEPARTMENT SELECTOR (UNCHANGED)
+# SIDEBAR – DEPARTMENT DROPDOWN (UNCHANGED)
 # =========================
 st.sidebar.header("Scheduling Settings")
 
@@ -76,6 +76,7 @@ if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     best_solution, cost_history = firefly_optimization(
         demand=demand,
+        selected_departments=selected_departments,
         population_size=population_size,
         iterations=iterations,
         alpha=alpha,
@@ -102,5 +103,10 @@ if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     st.dataframe(pd.DataFrame(result))
 
-    st.subheader("Convergence Graph (Cost Reduction)")
-    st.line_chart(pd.DataFrame({"Cost": cost_history}))
+    st.subheader("Convergence Graph (FFO Cost vs Iteration)")
+    st.line_chart(
+        pd.DataFrame(
+            {"Cost": cost_history},
+            index=range(1, len(cost_history) + 1)
+        )
+    )
