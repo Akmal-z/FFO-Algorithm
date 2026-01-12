@@ -72,7 +72,7 @@ demand = int(numeric_cols.sum().sum())
 # =========================
 # RUN FFO
 # =========================
-if selected_departments and st.button("🚀 Run Firefly Optimization"):
+if selected_departments and st.button("Run Firefly Optimization"):
 
     best_solution, cost_history = firefly_optimization(
         demand=demand,
