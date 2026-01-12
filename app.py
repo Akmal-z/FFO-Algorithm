@@ -11,11 +11,12 @@ st.set_page_config(page_title="FFO Staff Scheduling", layout="wide")
 st.title("🔥 Firefly Optimization – Staff Scheduling (Original Dataset)")
 
 # =========================
-# LOAD ORIGINAL DATASET
+# LOAD DATASET (SAFE)
 # =========================
-demand_matrix = load_dataset()
+demand_matrix, dataset_status = load_dataset()
 
-st.subheader("Original Demand Matrix (Department × Day)")
+st.info(f"Dataset status: {dataset_status}")
+st.subheader("Demand Matrix (Department × Day of Month)")
 st.dataframe(demand_matrix)
 
 # =========================
@@ -40,14 +41,13 @@ day_of_week = st.sidebar.selectbox(
 )
 
 st.sidebar.header("FFO Parameters")
-
 population_size = st.sidebar.slider("Number of Fireflies", 5, 30, 15)
 iterations = st.sidebar.slider("Iterations", 20, 200, 100)
 alpha = st.sidebar.slider("Randomization (α)", 0.0, 1.0, 0.3)
 beta = st.sidebar.slider("Attractiveness (β)", 0.1, 1.0, 0.6)
 
 # =========================
-# EXTRACT ORIGINAL DEMAND VECTOR
+# ORIGINAL DEMAND VECTOR
 # =========================
 demand_vector = demand_matrix.loc[selected_departments, day_of_month].values
 
@@ -85,7 +85,7 @@ if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     st.dataframe(pd.DataFrame(result))
 
-    st.subheader("FFO Convergence Graph (Original Data)")
+    st.subheader("FFO Convergence Graph")
     st.line_chart(
         pd.DataFrame(
             {"Cost": cost_history},
