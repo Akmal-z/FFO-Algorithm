@@ -12,7 +12,7 @@ def firefly_optimization(
     alpha,
     beta
 ):
-    # Each firefly = staff assignment per department
+    # Firefly = staff assigned per department
     fireflies = np.random.randint(
         low=0,
         high=10,
@@ -48,10 +48,10 @@ def firefly_optimization(
         )
 
     # ======================
-    # BEST BALANCED SELECTION
+    # MULTI-OBJECTIVE BALANCE
     # ======================
     balance_scores = [
-        abs(m["shortage"] - m["workload"])
+        abs(m["deviation"] - m["workload"])
         for m in metrics_list
     ]
 
