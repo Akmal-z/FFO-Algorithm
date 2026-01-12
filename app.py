@@ -6,23 +6,20 @@ from data_loader import load_dataset
 from ffo import firefly_optimization
 from config import DEPARTMENTS, DAYS_OF_WEEK, SHIFT_LENGTH
 
-st.set_page_config(
-    page_title="FFO Staff Scheduling Optimizer",
-    layout="wide"
-)
+st.set_page_config(page_title="FFO Staff Scheduling", layout="wide")
 
-st.title("🔥 Firefly Optimization (FFO) – Staff Scheduling")
-st.write("Dataset-driven scheduling using Firefly Algorithm")
+st.title("🔥 Firefly Optimization – Staff Scheduling (Original Dataset)")
 
 # =========================
-# LOAD DATASET
+# LOAD ORIGINAL DATASET
 # =========================
-df, dataset_status = load_dataset()
-st.info(f"Dataset status: {dataset_status}")
-st.dataframe(df.head())
+demand_matrix = load_dataset()
+
+st.subheader("Original Demand Matrix (Department × Day)")
+st.dataframe(demand_matrix)
 
 # =========================
-# SIDEBAR – DEPARTMENT DROPDOWN (UNCHANGED)
+# SIDEBAR – USER INPUT
 # =========================
 st.sidebar.header("Scheduling Settings")
 
@@ -34,7 +31,7 @@ selected_departments = st.sidebar.multiselect(
 
 day_of_month = st.sidebar.selectbox(
     "Day of Month (X-axis)",
-    list(range(1, 29))
+    list(demand_matrix.columns)
 )
 
 day_of_week = st.sidebar.selectbox(
@@ -42,40 +39,25 @@ day_of_week = st.sidebar.selectbox(
     DAYS_OF_WEEK
 )
 
-# =========================
-# SIDEBAR – FFO PARAMETERS
-# =========================
 st.sidebar.header("FFO Parameters")
 
-population_size = st.sidebar.slider(
-    "Number of Fireflies", 5, 30, 15
-)
-
-iterations = st.sidebar.slider(
-    "Iterations", 20, 200, 100
-)
-
-alpha = st.sidebar.slider(
-    "Randomization (α)", 0.0, 1.0, 0.3
-)
-
-beta = st.sidebar.slider(
-    "Attractiveness (β)", 0.1, 1.0, 0.6
-)
+population_size = st.sidebar.slider("Number of Fireflies", 5, 30, 15)
+iterations = st.sidebar.slider("Iterations", 20, 200, 100)
+alpha = st.sidebar.slider("Randomization (α)", 0.0, 1.0, 0.3)
+beta = st.sidebar.slider("Attractiveness (β)", 0.1, 1.0, 0.6)
 
 # =========================
-# DEMAND FROM DATASET
+# EXTRACT ORIGINAL DEMAND VECTOR
 # =========================
-numeric_cols = df.select_dtypes(include="number")
-demand = int(numeric_cols.sum().sum())
+demand_vector = demand_matrix.loc[selected_departments, day_of_month].values
 
 # =========================
 # RUN FFO
 # =========================
-if selected_departments and st.button("Run Firefly Optimization"):
+if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     best_solution, cost_history = firefly_optimization(
-        demand=demand,
+        demand_vector=demand_vector,
         selected_departments=selected_departments,
         population_size=population_size,
         iterations=iterations,
@@ -83,7 +65,7 @@ if selected_departments and st.button("Run Firefly Optimization"):
         beta=beta
     )
 
-    st.success("Optimization completed successfully")
+    st.success("Optimization completed")
 
     st.subheader(
         f"Optimized Schedule – Day {day_of_month} ({day_of_week})"
@@ -103,7 +85,7 @@ if selected_departments and st.button("Run Firefly Optimization"):
 
     st.dataframe(pd.DataFrame(result))
 
-    st.subheader("Convergence Graph (FFO Cost vs Iteration)")
+    st.subheader("FFO Convergence Graph (Original Data)")
     st.line_chart(
         pd.DataFrame(
             {"Cost": cost_history},
