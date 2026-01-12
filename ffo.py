@@ -12,6 +12,7 @@ def firefly_optimization(
     alpha,
     beta
 ):
+    # Initialize fireflies
     fireflies = np.random.randint(
         0,
         PERIODS_PER_DAY - SHIFT_LENGTH,
@@ -30,6 +31,7 @@ def firefly_optimization(
                 if brightness[j] < brightness[i]:
                     for dept in selected_departments:
                         idx = dept - 1
+
                         fireflies[i][idx] = (
                             fireflies[i][idx]
                             + beta * (fireflies[j][idx] - fireflies[i][idx])
@@ -46,8 +48,9 @@ def firefly_optimization(
                         fireflies[i], demand
                     )
 
-        # 🔥 Simpan COST sebenar iterasi ini
         cost_history.append(brightness.min())
 
     best_index = brightness.argmin()
-    return fireflies[best_index].astype(int), cost_history
+    best_solution = fireflies[best_index].astype(int)
+
+    return best_solution, cost_history
