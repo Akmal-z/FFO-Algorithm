@@ -5,7 +5,7 @@ from fitness import evaluate_firefly
 from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
 
 BETA = 0.6    # attractiveness
-ALPHA = 0.3   # randomization
+ALPHA = 0.3   # random movement
 
 def generate_firefly():
     return [
@@ -24,11 +24,11 @@ def firefly_optimization(selected_departments, population_size=20, iterations=50
                     for dept in selected_departments:
                         idx = dept - 1
 
-                        # attraction
+                        # Attraction
                         if random.random() < BETA:
                             population[i][idx] = population[j][idx]
 
-                        # random walk
+                        # Random walk
                         if random.random() < ALPHA:
                             population[i][idx] = random.randint(
                                 0, PERIODS_PER_DAY - SHIFT_LENGTH
