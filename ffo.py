@@ -5,7 +5,7 @@ from fitness import evaluate_firefly
 from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
 
 def firefly_optimization(
-    demand,
+    demand_vector,
     selected_departments,
     population_size,
     iterations,
@@ -19,7 +19,11 @@ def firefly_optimization(
     )
 
     brightness = np.array([
-        evaluate_firefly(f, demand) for f in fireflies
+        evaluate_firefly(
+            firefly[selected_departments - np.ones_like(selected_departments)],
+            demand_vector
+        )
+        for firefly in fireflies
     ])
 
     cost_history = []
@@ -43,7 +47,8 @@ def firefly_optimization(
                     )
 
                     brightness[i] = evaluate_firefly(
-                        fireflies[i], demand
+                        fireflies[i][[d-1 for d in selected_departments]],
+                        demand_vector
                     )
 
         cost_history.append(brightness.min())
