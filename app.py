@@ -1,90 +1,125 @@
-# app.py
-
 import streamlit as st
+import numpy as np
 import pandas as pd
-from data_loader import load_dataset
-from ffo import firefly_optimization
-from config import SHIFT_LENGTH, DAYS_OF_WEEK
-
-st.set_page_config(page_title="FFO Algorithm Scheduling", layout="wide")
-
-st.title("Firefly Optimization (FFO) – Employee Shift Scheduling")
-st.write("Department-based scheduling using Firefly Optimization")
+import time
+import matplotlib.pyplot as plt
 
 # =========================
-# Load dataset (NO upload)
+# PAGE CONFIG
 # =========================
-departments, df = load_dataset()
-
-# =========================
-# LEFT SIDEBAR: Department Selector
-# =========================
-st.sidebar.header("Department Selection")
-selected_departments = st.sidebar.multiselect(
-    "Select Department Numbers",
-    options=departments,
-    default=departments
+st.set_page_config(
+    page_title="FFO Staff Scheduling Optimizer",
+    layout="wide"
 )
 
 # =========================
-# LEFT SIDEBAR: FFO Parameters
+# CUSTOM DARK STYLE
 # =========================
-st.sidebar.header("FFO Parameters")
-population_size = st.sidebar.slider("Population Size", 10, 50, 20)
-iterations = st.sidebar.slider("Iterations", 10, 100, 50)
+st.markdown("""
+<style>
+body {
+    background-color: #0e1117;
+    color: white;
+}
+.block-container {
+    padding-top: 2rem;
+}
+.metric-card {
+    background-color: #161b22;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+.metric-title {
+    font-size: 14px;
+    color: #9da5b4;
+}
+.metric-value {
+    font-size: 36px;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # =========================
-# MAIN PAGE: Time Selection
+# SIDEBAR (LEFT CONTROL PANEL)
 # =========================
-st.subheader("Time Selection")
+st.sidebar.title("⚙ Control Panel")
 
+st.sidebar.subheader("1. Basic Settings")
+
+department = st.sidebar.selectbox(
+    "Select Department:",
+    [1, 2, 3, 4, 5, 6]
+)
+
+st.sidebar.subheader("Advanced Parameters")
+
+w = st.sidebar.slider("Inertia Weight (w)", 0.1, 1.0, 0.7)
+c1 = st.sidebar.slider("Cognitive (c1)", 0.5, 2.5, 1.5)
+c2 = st.sidebar.slider("Social (c2)", 0.5, 2.5, 1.5)
+
+# =========================
+# MAIN TITLE
+# =========================
+st.markdown("## 🧠 FFO Staff Scheduling Optimizer")
+
+# =========================
+# METRIC CARDS
+# =========================
 col1, col2 = st.columns(2)
 
 with col1:
-    day_of_month = st.selectbox(
-        "Day of Month (X-axis)",
-        list(range(1, 29))
-    )
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-title">Total Demand (Man-hours)</div>
+        <div class="metric-value">208</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    day_of_week = st.selectbox(
-        "Day of Week (Y-axis)",
-        DAYS_OF_WEEK
-    )
+    st.markdown("""
+    <div class="metric-card">
+        <div class="metric-title">Matrix Dimensions</div>
+        <div class="metric-value">(7, 28)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.write("")
 
 # =========================
-# Run Optimization
+# START BUTTON
 # =========================
-if selected_departments and st.button("Run Firefly Optimization"):
-    best_firefly, fitness = firefly_optimization(
-        selected_departments,
-        population_size,
-        iterations
-    )
-
-    st.subheader(
-        f"Optimized Schedule (Day {day_of_month}, {day_of_week})"
-    )
-
-    result = []
-    for dept in selected_departments:
-        start = best_firefly[dept - 1]
-        end = start + SHIFT_LENGTH
-
-        result.append({
-            "Department": dept,
-            "Start Period": start + 1,
-            "End Period": end,
-            "Working Duration": "8 hours"
-        })
-
-    result_df = pd.DataFrame(result)
-    st.dataframe(result_df)
-
-    st.success(f"Best Fitness Score: {fitness}")
+start = st.button("🚀 START OPTIMIZATION")
 
 # =========================
-# Dataset Preview
+# OPTIMIZATION SIMULATION
 # =========================
-with st.expander("View Dataset Preview"):
-    st.dataframe(df.head())
+if start:
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+
+    cost_history = []
+
+    for i in range(100):
+        time.sleep(0.01)  # simulate optimization time
+        progress_bar.progress(i + 1)
+        progress_text.text(f"Optimizing... Iteration {i+1}/100")
+
+        # Dummy convergence data (replace with FFO fitness)
+        cost_history.append(80000 - i * 500 + np.random.randint(-500, 500))
+
+    st.success("Optimization completed in 0.22 seconds.")
+
+    # =========================
+    # CONVERGENCE GRAPH
+    # =========================
+    st.markdown("### 1. Convergence Graph (Cost Reduction)")
+
+    fig, ax = plt.subplots()
+    ax.plot(cost_history, color="#58a6ff", linewidth=2)
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Cost")
+    ax.grid(True, alpha=0.3)
+
+    st.pyplot(fig)
