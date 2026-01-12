@@ -8,9 +8,8 @@ def evaluate_firefly(firefly, selected_departments):
     for dept in selected_departments:
         start = firefly[dept - 1]
 
-        # Constraint: shift must fit inside 28 periods
+        # Shift must fit within 28 periods
         if start < 0 or start + SHIFT_LENGTH > PERIODS_PER_DAY:
             penalty += 50
 
-    # Brightness (higher is better)
-    return -penalty
+    return -penalty   # Brightness
