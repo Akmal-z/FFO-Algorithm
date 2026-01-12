@@ -8,7 +8,7 @@ from config import DEPARTMENTS, DAYS_OF_WEEK, SHIFT_LENGTH
 
 st.set_page_config(page_title="FFO Staff Scheduling", layout="wide")
 
-st.title("🔥 Firefly Optimization – Staff Scheduling (Original Dataset)")
+st.title("🔥 Firefly Optimization – Staff Scheduling ")
 
 # =========================
 # LOAD DATASET (SAFE)
