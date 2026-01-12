@@ -18,39 +18,48 @@ def firefly_optimization(
         size=(population_size, NUM_DEPARTMENTS)
     )
 
-    brightness = np.array([
-        evaluate_firefly(
-            firefly[[d-1 for d in selected_departments]],
-            demand_vector
-        )
-        for firefly in fireflies
-    ])
-
-    cost_history = []
+    history = []
 
     for _ in range(iterations):
+        fitness_list = []
+
+        for f in fireflies:
+            metrics = evaluate_firefly(
+                f[[d-1 for d in selected_departments]],
+                demand_vector
+            )
+            fitness_list.append(metrics)
+
+        # ======================
+        # MOVE FIREFLIES
+        # ======================
         for i in range(population_size):
             for j in range(population_size):
-                if brightness[j] < brightness[i]:
-                    for dept in selected_departments:
-                        idx = dept - 1
+                if fitness_list[j]["global"] < fitness_list[i]["global"]:
+                    for d in selected_departments:
+                        idx = d - 1
                         fireflies[i][idx] += (
-                            beta * (fireflies[j][idx] - fireflies[i][idx])
-                            + alpha * np.random.randn()
+                            beta * (fireflies[j][idx] - fireflies[i][idx]) +
+                            alpha * np.random.randn()
                         )
 
                     fireflies[i] = np.clip(
-                        fireflies[i],
-                        0,
-                        PERIODS_PER_DAY - SHIFT_LENGTH
+                        fireflies[i], 0, PERIODS_PER_DAY - SHIFT_LENGTH
                     )
 
-                    brightness[i] = evaluate_firefly(
-                        fireflies[i][[d-1 for d in selected_departments]],
-                        demand_vector
-                    )
+        history.append(
+            min(f["global"] for f in fitness_list)
+        )
 
-        cost_history.append(brightness.min())
+    # ======================
+    # SELECT BEST BALANCED SOLUTION
+    # ======================
+    balance_scores = [
+        abs(f["shortage"] - f["workload"])
+        for f in fitness_list
+    ]
 
-    best_index = brightness.argmin()
-    return fireflies[best_index].astype(int), cost_history
+    best_index = np.argmin(balance_scores)
+    best_solution = fireflies[best_index]
+
+    return best_solution.astype(int), history, fitness_list[best_index]
