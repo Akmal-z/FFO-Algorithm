@@ -6,7 +6,7 @@ from data_loader import load_dataset
 from ffo import firefly_optimization
 from config import SHIFT_LENGTH, DAYS_OF_WEEK
 
-st.set_page_config(page_title="FFO Algorithm Scheduling")
+st.set_page_config(page_title="FFO Algorithm Scheduling", layout="wide")
 
 st.title("Firefly Optimization (FFO) – Employee Shift Scheduling")
 st.write("Department-based scheduling using Firefly Optimization")
@@ -17,17 +17,31 @@ st.write("Department-based scheduling using Firefly Optimization")
 departments, df = load_dataset()
 
 # =========================
-# MAIN PAGE: Department Selector
+# LEFT SIDEBAR: Department Selector
 # =========================
-st.subheader("Department Selection")
-selected_departments = st.multiselect(
+st.sidebar.header("Department Selection")
+
+selected_departments = st.sidebar.multiselect(
     "Select Department Numbers",
     options=departments,
     default=departments
 )
 
 # =========================
-# MAIN PAGE: Time Selection
+# LEFT SIDEBAR: FFO Parameters
+# =========================
+st.sidebar.header("FFO Parameters")
+
+population_size = st.sidebar.slider(
+    "Population Size", 10, 50, 20
+)
+
+iterations = st.sidebar.slider(
+    "Iterations", 10, 100, 50
+)
+
+# =========================
+# MAIN PAGE: Time Selection (X / Y axis)
 # =========================
 st.subheader("Time Selection")
 
@@ -44,13 +58,6 @@ with col2:
         "Day of Week (Y-axis)",
         DAYS_OF_WEEK
     )
-
-# =========================
-# Sidebar: FFO Parameters ONLY
-# =========================
-st.sidebar.header("FFO Parameters")
-population_size = st.sidebar.slider("Population Size", 10, 50, 20)
-iterations = st.sidebar.slider("Iterations", 10, 100, 50)
 
 # =========================
 # Run Optimization
@@ -84,7 +91,7 @@ if selected_departments and st.button("Run Firefly Optimization"):
     st.success(f"Best Fitness Score: {fitness}")
 
 # =========================
-# Dataset Preview (Optional but recommended)
+# Dataset Preview (Optional)
 # =========================
 with st.expander("View Dataset Preview"):
-    st.dataframe(df.head())
+    st.dataframe(df.hea
