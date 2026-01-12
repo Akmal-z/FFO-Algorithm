@@ -8,7 +8,7 @@ from config import DEPARTMENTS, DAYS_OF_WEEK, SHIFT_LENGTH
 
 st.set_page_config(page_title="FFO Staff Scheduling", layout="wide")
 
-st.title("🔥 Firefly Optimization – Multi-Objective Staff Scheduling")
+st.title("Firefly Optimization – Multi-Objective Staff Scheduling")
 
 # =========================
 # LOAD DATASET
@@ -54,7 +54,7 @@ demand_vector = demand_matrix.loc[
 # =========================
 # RUN FFO
 # =========================
-if selected_departments and st.button("🚀 Run Firefly Optimization"):
+if selected_departments and st.button("Run Firefly Optimization"):
 
     best_solution, history, best_metrics = firefly_optimization(
         demand_vector=demand_vector,
