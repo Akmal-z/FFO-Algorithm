@@ -10,7 +10,6 @@ def load_dataset():
         df = pd.read_excel(path)
         status = "Dataset loaded from repository"
     else:
-        # Structured fallback (dataset-style)
         df = pd.DataFrame({
             "Department": [1, 2, 3, 4, 5, 6],
             "Demand": [34, 36, 30, 32, 38, 38]
