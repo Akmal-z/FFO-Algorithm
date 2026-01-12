@@ -9,22 +9,16 @@ from config import SHIFT_LENGTH, DAYS_OF_WEEK
 st.set_page_config(page_title="FFO Algorithm Scheduling")
 
 st.title("Firefly Optimization (FFO) – Employee Shift Scheduling")
-st.write("X-axis: Day of Month | Y-axis: Day of Week")
+st.write("Department-based scheduling using fixed dataset")
 
-# Upload fallback (important)
-uploaded_file = st.file_uploader(
-    "Upload Excel Dataset (if not included in repository)",
-    type=["xlsx"]
-)
+# Load dataset (NO upload)
+departments, df = load_dataset()
 
-# Load dataset safely
-departments, df = load_dataset(uploaded_file)
-
-# Dataset preview (important for marks)
+# Dataset preview
 st.subheader("Dataset Preview")
 st.dataframe(df.head())
 
-# Department selector (MAIN PAGE)
+# 🔹 Department selector (numbers only)
 st.subheader("Select Departments")
 selected_departments = st.multiselect(
     "Department Numbers",
@@ -32,10 +26,17 @@ selected_departments = st.multiselect(
     default=departments
 )
 
-# Axis selectors
-st.subheader("Select Day")
-day_of_month = st.selectbox("Day of Month (X-axis)", list(range(1, 29)))
-day_of_week = st.selectbox("Day of Week (Y-axis)", DAYS_OF_WEEK)
+# 🔹 Axis representation
+st.subheader("Select Time Slot")
+day_of_month = st.selectbox(
+    "Day of Month (X-axis)",
+    list(range(1, 29))
+)
+
+day_of_week = st.selectbox(
+    "Day of Week (Y-axis)",
+    DAYS_OF_WEEK
+)
 
 st.sidebar.header("FFO Parameters")
 population_size = st.sidebar.slider("Population Size", 10, 50, 20)
@@ -58,10 +59,10 @@ if selected_departments and st.button("Run Firefly Optimization"):
         end = start + SHIFT_LENGTH
 
         result.append({
-            "Department": f"Department {dept}",
+            "Department": dept,
             "Start Period": start + 1,
             "End Period": end,
-            "Working Duration": "8 hours"
+            "Working Hours": "8 hours"
         })
 
     result_df = pd.DataFrame(result)
