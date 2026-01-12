@@ -20,7 +20,7 @@ def firefly_optimization(
 
     brightness = np.array([
         evaluate_firefly(
-            firefly[selected_departments - np.ones_like(selected_departments)],
+            firefly[[d-1 for d in selected_departments]],
             demand_vector
         )
         for firefly in fireflies
@@ -34,9 +34,8 @@ def firefly_optimization(
                 if brightness[j] < brightness[i]:
                     for dept in selected_departments:
                         idx = dept - 1
-                        fireflies[i][idx] = (
-                            fireflies[i][idx]
-                            + beta * (fireflies[j][idx] - fireflies[i][idx])
+                        fireflies[i][idx] += (
+                            beta * (fireflies[j][idx] - fireflies[i][idx])
                             + alpha * np.random.randn()
                         )
 
