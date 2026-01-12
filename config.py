@@ -1,6 +1,6 @@
 # config.py
 
-PERIODS_PER_DAY = 28        # 28 periods (30 min each)
+PERIODS_PER_DAY = 28        # 28 periods per day
 PERIOD_DURATION = 30       # minutes
 SHIFT_LENGTH = 16          # 16 periods = 8 hours
 NUM_DEPARTMENTS = 6
