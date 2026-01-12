@@ -4,8 +4,8 @@ import random
 from fitness import evaluate_firefly
 from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
 
-BETA = 0.6    # attractiveness
-ALPHA = 0.3   # random movement
+BETA = 0.6     # attractiveness
+ALPHA = 0.3    # randomization
 
 def generate_firefly():
     return [
