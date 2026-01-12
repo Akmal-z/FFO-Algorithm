@@ -1,7 +1,13 @@
+# app.py
+
 import streamlit as st
-import numpy as np
 import pandas as pd
-import time
+from data_loader import load_dataset
+from ffo import firefly_optimization
+from config import (
+    DEPARTMENTS, DAYS_OF_WEEK,
+    SHIFT_LENGTH
+)
 
 # =========================
 # PAGE CONFIG
@@ -12,143 +18,110 @@ st.set_page_config(
 )
 
 # =========================
-# DARK UI STYLE
+# TITLE
 # =========================
-st.markdown("""
-<style>
-body {
-    background-color: #0e1117;
-    color: white;
-}
-.metric-card {
-    background-color: #161b22;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-}
-.metric-title {
-    font-size: 14px;
-    color: #9da5b4;
-}
-.metric-value {
-    font-size: 36px;
-    font-weight: bold;
-}
-</style>
-""", unsafe_allow_html=True)
+st.title("🔥 Firefly Optimization (FFO) – Staff Scheduling")
+st.write("Dataset-driven scheduling with user-defined parameters")
 
 # =========================
-# LEFT SIDEBAR – FFO CONTROLS
+# LOAD DATASET
 # =========================
-st.sidebar.title("⚙ Control Panel")
+df = load_dataset()
 
-st.sidebar.subheader("1. Basic Settings")
-department = st.sidebar.selectbox(
-    "Select Department:",
-    [1, 2, 3, 4, 5, 6]
+st.subheader("Dataset Preview")
+st.dataframe(df.head())
+
+# =========================
+# SIDEBAR – USER INPUT
+# =========================
+st.sidebar.header("User Inputs")
+
+selected_departments = st.sidebar.multiselect(
+    "Select Departments",
+    options=DEPARTMENTS,
+    default=DEPARTMENTS
 )
 
-st.sidebar.subheader("2. FFO Parameters")
-
-alpha = st.sidebar.slider(
-    "Randomization (α)",
-    0.0, 1.0, 0.3
+day_of_month = st.sidebar.selectbox(
+    "Day of Month (X-axis)",
+    list(range(1, 29))
 )
 
-beta = st.sidebar.slider(
-    "Attractiveness (β)",
-    0.1, 1.0, 0.6
+day_of_week = st.sidebar.selectbox(
+    "Day of Week (Y-axis)",
+    DAYS_OF_WEEK
+)
+
+st.sidebar.header("FFO Parameters")
+
+population_size = st.sidebar.slider(
+    "Number of Fireflies", 5, 30, 15
 )
 
 iterations = st.sidebar.slider(
-    "Iterations",
-    20, 200, 100
+    "Iterations", 20, 200, 100
 )
 
-population_size = st.sidebar.slider(
-    "Number of Fireflies",
-    5, 30, 15
+alpha = st.sidebar.slider(
+    "Randomization (α)", 0.0, 1.0, 0.3
+)
+
+beta = st.sidebar.slider(
+    "Attractiveness (β)", 0.1, 1.0, 0.6
 )
 
 # =========================
-# MAIN TITLE
+# DEMAND FROM DATASET
 # =========================
-st.markdown("## 🧠 FFO Staff Scheduling Optimizer")
+# Example: use first numeric value as demand
+numeric_cols = df.select_dtypes(include="number")
+
+if numeric_cols.empty:
+    st.error("Dataset must contain at least one numeric column.")
+    st.stop()
+
+demand = int(numeric_cols.iloc[0].sum())
 
 # =========================
-# METRIC CARDS
+# RUN FFO
 # =========================
-col1, col2 = st.columns(2)
+if st.button("🚀 Start FFO Optimization"):
 
-with col1:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-title">Total Demand (Man-hours)</div>
-        <div class="metric-value">208</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-title">Matrix Dimensions</div>
-        <div class="metric-value">(7, 28)</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.write("")
-
-# =========================
-# START BUTTON
-# =========================
-start = st.button("🚀 START OPTIMIZATION")
-
-# =========================
-# FIRELY OPTIMIZATION (FFO)
-# =========================
-if start:
-    progress_text = st.empty()
-    progress_bar = st.progress(0)
-
-    # 🔥 Step 1: Initialize fireflies (random solutions)
-    fireflies = np.random.randint(
-        low=50_000,
-        high=90_000,
-        size=population_size
+    best_solution, cost_history = firefly_optimization(
+        demand=demand,
+        population_size=population_size,
+        iterations=iterations,
+        alpha=alpha,
+        beta=beta
     )
 
-    cost_history = []
+    st.success("Optimization completed successfully")
 
-    # 🔥 Step 2: Optimization loop
-    for t in range(iterations):
-        for i in range(population_size):
-            for j in range(population_size):
-                if fireflies[j] < fireflies[i]:
-                    # 🔥 Move firefly i towards brighter firefly j
-                    attraction = beta * (fireflies[j] - fireflies[i])
-                    random_move = alpha * np.random.randn() * 1000
-                    fireflies[i] += attraction + random_move
+    st.subheader(
+        f"Optimized Schedule – Day {day_of_month} ({day_of_week})"
+    )
 
-        # Save best cost (brightness)
-        best_cost = np.min(fireflies)
-        cost_history.append(best_cost)
+    # =========================
+    # RESULT TABLE
+    # =========================
+    result = []
 
-        progress_bar.progress(int((t + 1) / iterations * 100))
-        progress_text.text(
-            f"Optimizing... Iteration {t+1}/{iterations}"
-        )
+    for dept in selected_departments:
+        start = best_solution[dept - 1]
+        end = start + SHIFT_LENGTH
 
-        time.sleep(0.01)
+        result.append({
+            "Department": dept,
+            "Start Period": start + 1,
+            "End Period": end,
+            "Working Hours": "8 hours"
+        })
 
-    st.success("Optimization completed successfully.")
+    result_df = pd.DataFrame(result)
+    st.dataframe(result_df)
 
     # =========================
     # CONVERGENCE GRAPH
     # =========================
-    st.markdown("### 1. Convergence Graph (Cost Reduction)")
-
-    df_chart = pd.DataFrame({
-        "Cost": cost_history
-    })
-
-    st.line_chart(df_chart)
+    st.subheader("Convergence Graph (Cost Reduction)")
+    st.line_chart(pd.DataFrame({"Cost": cost_history}))
