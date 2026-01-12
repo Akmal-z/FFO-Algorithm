@@ -20,7 +20,6 @@ departments, df = load_dataset()
 # LEFT SIDEBAR: Department Selector
 # =========================
 st.sidebar.header("Department Selection")
-
 selected_departments = st.sidebar.multiselect(
     "Select Department Numbers",
     options=departments,
@@ -31,17 +30,11 @@ selected_departments = st.sidebar.multiselect(
 # LEFT SIDEBAR: FFO Parameters
 # =========================
 st.sidebar.header("FFO Parameters")
-
-population_size = st.sidebar.slider(
-    "Population Size", 10, 50, 20
-)
-
-iterations = st.sidebar.slider(
-    "Iterations", 10, 100, 50
-)
+population_size = st.sidebar.slider("Population Size", 10, 50, 20)
+iterations = st.sidebar.slider("Iterations", 10, 100, 50)
 
 # =========================
-# MAIN PAGE: Time Selection (X / Y axis)
+# MAIN PAGE: Time Selection
 # =========================
 st.subheader("Time Selection")
 
@@ -91,7 +84,7 @@ if selected_departments and st.button("Run Firefly Optimization"):
     st.success(f"Best Fitness Score: {fitness}")
 
 # =========================
-# Dataset Preview (Optional)
+# Dataset Preview
 # =========================
 with st.expander("View Dataset Preview"):
-    st.dataframe(df.hea
+    st.dataframe(df.head())
