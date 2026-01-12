@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
 
 # =========================
 # PAGE CONFIG
@@ -13,7 +12,7 @@ st.set_page_config(
 )
 
 # =========================
-# CUSTOM DARK STYLE
+# DARK UI STYLE
 # =========================
 st.markdown("""
 <style>
@@ -47,14 +46,12 @@ body {
 st.sidebar.title("⚙ Control Panel")
 
 st.sidebar.subheader("1. Basic Settings")
-
 department = st.sidebar.selectbox(
     "Select Department:",
     [1, 2, 3, 4, 5, 6]
 )
 
 st.sidebar.subheader("Advanced Parameters")
-
 w = st.sidebar.slider("Inertia Weight (w)", 0.1, 1.0, 0.7)
 c1 = st.sidebar.slider("Cognitive (c1)", 0.5, 2.5, 1.5)
 c2 = st.sidebar.slider("Social (c2)", 0.5, 2.5, 1.5)
@@ -102,12 +99,14 @@ if start:
     cost_history = []
 
     for i in range(100):
-        time.sleep(0.01)  # simulate optimization time
+        time.sleep(0.01)
         progress_bar.progress(i + 1)
         progress_text.text(f"Optimizing... Iteration {i+1}/100")
 
-        # Dummy convergence data (replace with FFO fitness)
-        cost_history.append(80000 - i * 500 + np.random.randint(-500, 500))
+        # Dummy convergence data (replace with FFO fitness later)
+        cost_history.append(
+            80000 - i * 500 + np.random.randint(-400, 400)
+        )
 
     st.success("Optimization completed in 0.22 seconds.")
 
@@ -116,10 +115,8 @@ if start:
     # =========================
     st.markdown("### 1. Convergence Graph (Cost Reduction)")
 
-    fig, ax = plt.subplots()
-    ax.plot(cost_history, color="#58a6ff", linewidth=2)
-    ax.set_xlabel("Iteration")
-    ax.set_ylabel("Cost")
-    ax.grid(True, alpha=0.3)
+    chart_data = pd.DataFrame({
+        "Cost": cost_history
+    })
 
-    st.pyplot(fig)
+    st.line_chart(chart_data)
