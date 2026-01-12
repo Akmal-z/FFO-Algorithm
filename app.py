@@ -54,7 +54,7 @@ demand_vector = demand_matrix.loc[selected_departments, day_of_month].values
 # =========================
 # RUN FFO
 # =========================
-if selected_departments and st.button("🚀 Run Firefly Optimization"):
+if selected_departments and st.button("Run Firefly Optimization"):
 
     best_solution, cost_history = firefly_optimization(
         demand_vector=demand_vector,
