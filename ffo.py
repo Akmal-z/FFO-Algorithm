@@ -22,16 +22,18 @@ def firefly_optimization(
         evaluate_firefly(f, demand) for f in fireflies
     ])
 
-    best_cost_history = []
+    cost_history = []
 
-    for t in range(iterations):
+    for _ in range(iterations):
         for i in range(population_size):
             for j in range(population_size):
                 if brightness[j] < brightness[i]:
-                    # Move firefly i toward j
-                    fireflies[i] = fireflies[i] + \
-                        beta * (fireflies[j] - fireflies[i]) + \
-                        alpha * np.random.randn(NUM_DEPARTMENTS)
+                    # Move firefly i towards brighter firefly j
+                    fireflies[i] = (
+                        fireflies[i]
+                        + beta * (fireflies[j] - fireflies[i])
+                        + alpha * np.random.randn(NUM_DEPARTMENTS)
+                    )
 
                     fireflies[i] = np.clip(
                         fireflies[i],
@@ -43,9 +45,9 @@ def firefly_optimization(
                         fireflies[i], demand
                     )
 
-        best_cost_history.append(np.min(brightness))
+        cost_history.append(brightness.min())
 
-    best_index = np.argmin(brightness)
-    best_solution = fireflies[best_index]
+    best_index = brightness.argmin()
+    best_solution = fireflies[best_index].astype(int)
 
-    return best_solution.astype(int), best_cost_history
+    return best_solution, cost_history
