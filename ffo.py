@@ -2,7 +2,7 @@
 
 import numpy as np
 from fitness import evaluate_firefly
-from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
+from config import NUM_DEPARTMENTS
 
 def firefly_optimization(
     demand_vector,
@@ -12,53 +12,48 @@ def firefly_optimization(
     alpha,
     beta
 ):
-    # Initialize fireflies
+    # Each firefly = staff assignment per department
     fireflies = np.random.randint(
-        0,
-        PERIODS_PER_DAY - SHIFT_LENGTH,
+        low=0,
+        high=10,
         size=(population_size, NUM_DEPARTMENTS)
     )
 
     history = []
+    metrics_list = []
 
     for _ in range(iterations):
-        fitness_list = []
+        metrics_list = []
 
         for f in fireflies:
             metrics = evaluate_firefly(
                 f[[d - 1 for d in selected_departments]],
                 demand_vector
             )
-            fitness_list.append(metrics)
+            metrics_list.append(metrics)
 
-        # Move fireflies (FFO rule)
+        # Move fireflies
         for i in range(population_size):
             for j in range(population_size):
-                if fitness_list[j]["global"] < fitness_list[i]["global"]:
+                if metrics_list[j]["global"] < metrics_list[i]["global"]:
                     for d in selected_departments:
                         idx = d - 1
                         fireflies[i][idx] += (
-                            beta * (fireflies[j][idx] - fireflies[i][idx])
-                            + alpha * np.random.randn()
+                            beta * (fireflies[j][idx] - fireflies[i][idx]) +
+                            alpha * np.random.randn()
                         )
 
-                    fireflies[i] = np.clip(
-                        fireflies[i],
-                        0,
-                        PERIODS_PER_DAY - SHIFT_LENGTH
-                    )
+        history.append(
+            min(m["global"] for m in metrics_list)
+        )
 
-        history.append(min(f["global"] for f in fitness_list))
-
-    # =========================
-    # MULTI-OBJECTIVE SELECTION
-    # =========================
+    # ======================
+    # BEST BALANCED SELECTION
+    # ======================
     balance_scores = [
-        abs(f["shortage"] - f["workload"])
-        for f in fitness_list
+        abs(m["shortage"] - m["workload"])
+        for m in metrics_list
     ]
 
-    best_index = int(np.argmin(balance_scores))
-    best_solution = fireflies[best_index]
-
-    return best_solution.astype(int), history, fitness_list[best_index]
+    best_idx = int(np.argmin(balance_scores))
+    return fireflies[best_idx].astype(int), history, metrics_list[best_idx]
