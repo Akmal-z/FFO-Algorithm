@@ -1,42 +1,51 @@
 # ffo.py
 
-import random
+import numpy as np
 from fitness import evaluate_firefly
 from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
 
-BETA = 0.6     # attractiveness
-ALPHA = 0.3    # randomization
+def firefly_optimization(
+    demand,
+    population_size,
+    iterations,
+    alpha,
+    beta
+):
+    # Initialize fireflies
+    fireflies = np.random.randint(
+        0,
+        PERIODS_PER_DAY - SHIFT_LENGTH,
+        size=(population_size, NUM_DEPARTMENTS)
+    )
 
-def generate_firefly():
-    return [
-        random.randint(0, PERIODS_PER_DAY - SHIFT_LENGTH)
-        for _ in range(NUM_DEPARTMENTS)
-    ]
+    brightness = np.array([
+        evaluate_firefly(f, demand) for f in fireflies
+    ])
 
-def firefly_optimization(selected_departments, population_size=20, iterations=50):
-    population = [generate_firefly() for _ in range(population_size)]
-    brightness = [evaluate_firefly(f, selected_departments) for f in population]
+    best_cost_history = []
 
-    for _ in range(iterations):
+    for t in range(iterations):
         for i in range(population_size):
             for j in range(population_size):
-                if brightness[j] > brightness[i]:
-                    for dept in selected_departments:
-                        idx = dept - 1
+                if brightness[j] < brightness[i]:
+                    # Move firefly i toward j
+                    fireflies[i] = fireflies[i] + \
+                        beta * (fireflies[j] - fireflies[i]) + \
+                        alpha * np.random.randn(NUM_DEPARTMENTS)
 
-                        # Attraction
-                        if random.random() < BETA:
-                            population[i][idx] = population[j][idx]
-
-                        # Random walk
-                        if random.random() < ALPHA:
-                            population[i][idx] = random.randint(
-                                0, PERIODS_PER_DAY - SHIFT_LENGTH
-                            )
-
-                    brightness[i] = evaluate_firefly(
-                        population[i], selected_departments
+                    fireflies[i] = np.clip(
+                        fireflies[i],
+                        0,
+                        PERIODS_PER_DAY - SHIFT_LENGTH
                     )
 
-    best_index = brightness.index(max(brightness))
-    return population[best_index], brightness[best_index]
+                    brightness[i] = evaluate_firefly(
+                        fireflies[i], demand
+                    )
+
+        best_cost_history.append(np.min(brightness))
+
+    best_index = np.argmin(brightness)
+    best_solution = fireflies[best_index]
+
+    return best_solution.astype(int), best_cost_history
