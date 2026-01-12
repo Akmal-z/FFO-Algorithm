@@ -9,13 +9,22 @@ from config import SHIFT_LENGTH, DAYS_OF_WEEK
 st.set_page_config(page_title="FFO Algorithm Scheduling")
 
 st.title("Firefly Optimization (FFO) – Employee Shift Scheduling")
-
 st.write("X-axis: Day of Month | Y-axis: Day of Week")
 
-# Load dataset
-departments, df = load_dataset()
+# Upload fallback (important)
+uploaded_file = st.file_uploader(
+    "Upload Excel Dataset (if not included in repository)",
+    type=["xlsx"]
+)
 
-# 🔹 Department selector on MAIN PAGE
+# Load dataset safely
+departments, df = load_dataset(uploaded_file)
+
+# Dataset preview (important for marks)
+st.subheader("Dataset Preview")
+st.dataframe(df.head())
+
+# Department selector (MAIN PAGE)
 st.subheader("Select Departments")
 selected_departments = st.multiselect(
     "Department Numbers",
@@ -23,7 +32,7 @@ selected_departments = st.multiselect(
     default=departments
 )
 
-# Axis selection
+# Axis selectors
 st.subheader("Select Day")
 day_of_month = st.selectbox("Day of Month (X-axis)", list(range(1, 29)))
 day_of_week = st.selectbox("Day of Week (Y-axis)", DAYS_OF_WEEK)
@@ -52,7 +61,7 @@ if selected_departments and st.button("Run Firefly Optimization"):
             "Department": f"Department {dept}",
             "Start Period": start + 1,
             "End Period": end,
-            "Working Hours": "8 hours"
+            "Working Duration": "8 hours"
         })
 
     result_df = pd.DataFrame(result)
