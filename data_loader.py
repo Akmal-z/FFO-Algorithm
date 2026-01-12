@@ -18,7 +18,6 @@ def load_dataset():
 
         status = "Original dataset loaded"
     else:
-        # Fallback: ORIGINAL STRUCTURE (NOT simplified)
         days = list(range(1, 29))
         demand_matrix = pd.DataFrame(
             np.ones((6, 28), dtype=int),
