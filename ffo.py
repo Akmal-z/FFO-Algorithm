@@ -4,7 +4,14 @@ import numpy as np
 from fitness import evaluate_firefly
 from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
 
-def firefly_optimization(demand, population_size, iterations, alpha, beta):
+def firefly_optimization(
+    demand,
+    selected_departments,
+    population_size,
+    iterations,
+    alpha,
+    beta
+):
     fireflies = np.random.randint(
         0,
         PERIODS_PER_DAY - SHIFT_LENGTH,
@@ -21,11 +28,13 @@ def firefly_optimization(demand, population_size, iterations, alpha, beta):
         for i in range(population_size):
             for j in range(population_size):
                 if brightness[j] < brightness[i]:
-                    fireflies[i] = (
-                        fireflies[i]
-                        + beta * (fireflies[j] - fireflies[i])
-                        + alpha * np.random.randn(NUM_DEPARTMENTS)
-                    )
+                    for dept in selected_departments:
+                        idx = dept - 1
+                        fireflies[i][idx] = (
+                            fireflies[i][idx]
+                            + beta * (fireflies[j][idx] - fireflies[i][idx])
+                            + alpha * np.random.randn()
+                        )
 
                     fireflies[i] = np.clip(
                         fireflies[i],
@@ -37,6 +46,7 @@ def firefly_optimization(demand, population_size, iterations, alpha, beta):
                         fireflies[i], demand
                     )
 
+        # 🔥 Simpan COST sebenar iterasi ini
         cost_history.append(brightness.min())
 
     best_index = brightness.argmin()
