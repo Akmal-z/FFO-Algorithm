@@ -1,20 +1,16 @@
 # fitness.py
 
-from config import PERIODS_PER_DAY, SHIFT_LENGTH, NUM_DEPARTMENTS
+from config import PERIODS_PER_DAY, SHIFT_LENGTH
 
-def evaluate_firefly(firefly):
+def evaluate_firefly(firefly, selected_departments):
     penalty = 0
 
-    for dept in range(NUM_DEPARTMENTS):
-        start_period = firefly[dept]
+    for dept in selected_departments:
+        start = firefly[dept - 1]
 
-        # Constraint: shift must fit inside the day
-        if start_period < 0 or start_period + SHIFT_LENGTH > PERIODS_PER_DAY:
+        # Shift must stay inside 28 periods
+        if start < 0 or start + SHIFT_LENGTH > PERIODS_PER_DAY:
             penalty += 50
 
-        # Constraint: continuous 16 periods
-        # (Automatically satisfied by encoding)
-
-    # Higher fitness = better solution
-    fitness = -penalty
-    return fitness
+    # Brightness (higher is better)
+    return -penalty
