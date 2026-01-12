@@ -5,7 +5,8 @@ import pandas as pd
 from data_loader import load_dataset
 from ffo import firefly_optimization
 from config import (
-    DEPARTMENTS, DAYS_OF_WEEK,
+    DEPARTMENTS,
+    DAYS_OF_WEEK,
     SHIFT_LENGTH
 )
 
@@ -17,16 +18,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# =========================
-# TITLE
-# =========================
 st.title("🔥 Firefly Optimization (FFO) – Staff Scheduling")
-st.write("Dataset-driven scheduling with user-defined parameters")
+st.write("Dataset-driven optimization using Firefly Algorithm")
 
 # =========================
-# LOAD DATASET
+# LOAD DATASET (SAFE)
 # =========================
-df = load_dataset()
+df, dataset_status = load_dataset()
+
+st.info(f"Dataset status: {dataset_status}")
 
 st.subheader("Dataset Preview")
 st.dataframe(df.head())
@@ -34,7 +34,7 @@ st.dataframe(df.head())
 # =========================
 # SIDEBAR – USER INPUT
 # =========================
-st.sidebar.header("User Inputs")
+st.sidebar.header("Scheduling Settings")
 
 selected_departments = st.sidebar.multiselect(
     "Select Departments",
@@ -73,19 +73,13 @@ beta = st.sidebar.slider(
 # =========================
 # DEMAND FROM DATASET
 # =========================
-# Example: use first numeric value as demand
 numeric_cols = df.select_dtypes(include="number")
-
-if numeric_cols.empty:
-    st.error("Dataset must contain at least one numeric column.")
-    st.stop()
-
-demand = int(numeric_cols.iloc[0].sum())
+demand = int(numeric_cols.sum().sum())
 
 # =========================
 # RUN FFO
 # =========================
-if st.button("🚀 Start FFO Optimization"):
+if selected_departments and st.button("🚀 Run Firefly Optimization"):
 
     best_solution, cost_history = firefly_optimization(
         demand=demand,
@@ -117,8 +111,7 @@ if st.button("🚀 Start FFO Optimization"):
             "Working Hours": "8 hours"
         })
 
-    result_df = pd.DataFrame(result)
-    st.dataframe(result_df)
+    st.dataframe(pd.DataFrame(result))
 
     # =========================
     # CONVERGENCE GRAPH
