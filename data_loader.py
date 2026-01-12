@@ -6,14 +6,20 @@ import os
 def load_dataset():
     path = "dataset/Store_Size_6.xlsx"
 
-    if os.path.exists(path):
-        df = pd.read_excel(path)
-        status = "Dataset loaded from repository"
-    else:
-        df = pd.DataFrame({
-            "Department": [1, 2, 3, 4, 5, 6],
-            "Demand": [34, 36, 30, 32, 38, 38]
-        })
-        status = "Fallback dataset (structure-based)"
+    if not os.path.exists(path):
+        raise FileNotFoundError(
+            "Dataset not found. Please ensure dataset/Store_Size_6.xlsx exists."
+        )
 
-    return df, status
+    # Read raw Excel (no header)
+    raw_df = pd.read_excel(path, header=None)
+
+    # Day of month (columns 1–28)
+    days = raw_df.iloc[1, 1:29].astype(int)
+
+    # Demand matrix: rows = departments, cols = days
+    demand_matrix = raw_df.iloc[2:8, 1:29].copy()
+    demand_matrix.index = [1, 2, 3, 4, 5, 6]
+    demand_matrix.columns = days
+
+    return demand_matrix
